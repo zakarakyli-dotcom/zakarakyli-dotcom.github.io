@@ -1,0 +1,962 @@
+```html
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Построение сетевого сообщества политологов</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Montserrat:wght@300;400;600;700&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --cyan:      #00FFFF;
+  --cyan-dim:  #00cccc;
+  --bg:        #0a0c0f;
+  --bg2:       #111418;
+  --bg3:       #1a1e24;
+  --text:      #e8e8e8;
+  --muted:     #7a8494;
+  --border:    rgba(0,255,255,0.18);
+  --red:       #ff3c3c;
+  --gold:      #ffd166;
+  --green:     #39ff14;
+  --silver:    #b0b0b0;        /* для Нюрнберга */
+  --font-head: 'Playfair Display', serif;
+  --font-body: 'Montserrat', sans-serif;
+  --font-mono: 'Courier Prime', monospace;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-weight: 300;
+  line-height: 1.7;
+  min-height: 100vh;
+}
+a { color: inherit; text-decoration: none; }
+img { display: block; max-width: 100%; }
+
+/* ── TOPBAR ─────────────────────────────────────── */
+.topbar {
+  position: sticky; top: 0; z-index: 100;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 2.5rem; height: 64px;
+  backdrop-filter: blur(8px);
+}
+.topbar__logo {
+  font-family: var(--font-head);
+  font-size: 0.92rem; font-weight: 900;
+  color: var(--cyan); letter-spacing: 0.02em;
+  white-space: nowrap; line-height: 1.25;
+}
+.topbar__logo span { color: var(--text); font-weight: 300; }
+.topbar__nav { display: flex; gap: 0.2rem; flex-wrap: wrap; }
+.topbar__nav a {
+  font-size: 0.68rem; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.09em;
+  padding: 6px 12px; border: 1px solid transparent;
+  color: var(--muted); transition: color 0.2s, border-color 0.2s;
+}
+.topbar__nav a:hover { color: var(--cyan); border-color: var(--border); }
+
+/* ── PAGE ROUTING ───────────────────────────────── */
+.page { display: none; }
+body:not(:has(:target)) #home { display: block; }
+#home:target     { display: block; }
+#kosmos:target   { display: block; }
+#gdr:target      { display: block; }
+#baltika:target  { display: block; }
+#knr:target      { display: block; }
+#molodezh:target { display: block; }
+#nurnberg:target { display: block; }   /* новый раздел Нюрнберг */
+
+/* ── HOME ───────────────────────────────────────── */
+.home-hero {
+  padding: 6rem 2.5rem 4rem; max-width: 1200px; margin: 0 auto;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center;
+}
+.home-hero__eyebrow {
+  font-family: var(--font-mono); font-size: 0.7rem;
+  color: var(--cyan); letter-spacing: 0.2em;
+  text-transform: uppercase; margin-bottom: 1.2rem;
+}
+.home-hero__title {
+  font-family: var(--font-head);
+  font-size: clamp(1.8rem, 3vw, 3.2rem);
+  font-weight: 900; line-height: 1.12;
+  color: var(--text); margin-bottom: 1.5rem;
+}
+.home-hero__title em { color: var(--cyan); font-style: normal; }
+.home-hero__desc { font-size: 1rem; color: var(--muted); max-width: 480px; line-height: 1.8; }
+.home-hero__visual {
+  position: relative; height: 420px;
+  display: flex; align-items: center; justify-content: center;
+}
+.home-hero__glow {
+  width: 300px; height: 300px; border-radius: 50%;
+  border: 1px solid var(--border);
+  position: relative; display: flex; align-items: center; justify-content: center;
+}
+.home-hero__glow::before {
+  content: ''; position: absolute; inset: -30px;
+  border-radius: 50%; border: 1px solid rgba(0,255,255,0.07);
+}
+.home-hero__glow::after {
+  content: ''; position: absolute; inset: -60px;
+  border-radius: 50%; border: 1px solid rgba(0,255,255,0.04);
+}
+.home-hero__inner-text {
+  font-family: var(--font-head); font-size: 0.9rem;
+  color: var(--cyan); letter-spacing: 0.1em;
+  text-transform: uppercase; text-align: center;
+  padding: 0 1.5rem; line-height: 1.7;
+}
+.divider { border: none; border-top: 1px solid var(--border); margin: 0 2.5rem; }
+
+.sections-grid {
+  max-width: 1200px; margin: 4rem auto; padding: 0 2.5rem;
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem;
+}
+.section-card {
+  background: var(--bg2); border: 1px solid var(--border);
+  padding: 2rem 1.8rem; position: relative; overflow: hidden;
+  transition: border-color 0.3s, transform 0.3s;
+  display: flex; flex-direction: column; height: 100%;
+}
+.section-card:hover { transform: translateY(-3px); }
+.section-card__num {
+  font-family: var(--font-mono); font-size: 3.5rem; font-weight: 700;
+  position: absolute; top: 0.5rem; right: 1rem; line-height: 1;
+}
+.section-card__tag {
+  font-family: var(--font-mono); font-size: 0.62rem;
+  text-transform: uppercase; letter-spacing: 0.18em; margin-bottom: 0.8rem;
+}
+.section-card__title {
+  font-family: var(--font-head); font-size: 1.5rem;
+  font-weight: 700; margin-bottom: 0.8rem; line-height: 1.2;
+}
+.section-card__desc { font-size: 0.85rem; color: var(--muted); line-height: 1.7; margin-bottom: 1.5rem; flex-grow: 1; }
+.section-card__link {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 0.75rem; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.12em; border-bottom: 1px solid; padding-bottom: 2px;
+  transition: gap 0.2s; margin-top: auto;
+}
+.section-card__link:hover { gap: 12px; }
+.section-card__link::after { content: '→'; }
+
+.card--cyan .section-card__num  { color: rgba(0,255,255,0.06); }
+.card--cyan .section-card__tag,
+.card--cyan .section-card__link { color: var(--cyan); border-color: var(--cyan); }
+.card--cyan:hover               { border-color: var(--cyan-dim); }
+
+.card--red .section-card__num   { color: rgba(255,60,60,0.07); }
+.card--red .section-card__tag,
+.card--red .section-card__link  { color: var(--red); border-color: var(--red); }
+.card--red:hover                { border-color: var(--red); }
+
+.card--gold .section-card__num  { color: rgba(255,209,102,0.07); }
+.card--gold .section-card__tag,
+.card--gold .section-card__link { color: var(--gold); border-color: var(--gold); }
+.card--gold:hover               { border-color: var(--gold); }
+
+.card--green .section-card__num  { color: rgba(57,255,20,0.06); }
+.card--green .section-card__tag,
+.card--green .section-card__link { color: var(--green); border-color: var(--green); }
+.card--green:hover               { border-color: var(--green); }
+
+/* стили для карточки Нюрнберг (серебро) */
+.card--silver .section-card__num  { color: rgba(176,176,176,0.1); }
+.card--silver .section-card__tag,
+.card--silver .section-card__link { color: var(--silver); border-color: var(--silver); }
+.card--silver:hover               { border-color: var(--silver); }
+
+.home-bottom {
+  max-width: 1200px; margin: 2rem auto 5rem; padding: 0 2.5rem;
+  display: flex; align-items: center; gap: 1.5rem;
+  color: var(--muted); font-size: 0.75rem;
+}
+.home-bottom::before {
+  content: ''; display: block; width: 40px; height: 1px;
+  background: var(--border); flex-shrink: 0;
+}
+
+/* ── INNER PAGES ────────────────────────────────── */
+.page-header { padding: 3rem 2.5rem 2rem; max-width: 1200px; margin: 0 auto; }
+.page-eyebrow {
+  font-family: var(--font-mono); font-size: 0.65rem;
+  text-transform: uppercase; letter-spacing: 0.25em;
+  margin-bottom: 1rem; display: flex; align-items: center; gap: 12px;
+}
+.page-eyebrow::before { content: ''; display: block; width: 28px; height: 1px; }
+.page-title {
+  font-family: var(--font-head);
+  font-size: clamp(2.5rem, 4vw, 4.5rem);
+  font-weight: 900; line-height: 1.05; margin-bottom: 1rem;
+}
+.page-subtitle { font-size: 1rem; color: var(--muted); max-width: 600px; margin-bottom: 2rem; }
+
+.resp-card { max-width: 1200px; margin: 0 auto 3rem; padding: 0 2.5rem; }
+.resp-card__inner {
+  display: flex; align-items: center; gap: 1.8rem;
+  padding: 1.5rem 2rem; border: 1px solid var(--border);
+  background: var(--bg2); max-width: 500px;
+}
+.resp-card__photo {
+  width: 80px; height: 80px; border-radius: 50%;
+  object-fit: cover; background: var(--bg3);
+  border: 2px solid var(--border); flex-shrink: 0;
+}
+.resp-card__photo-placeholder {
+  width: 80px; height: 80px; border-radius: 50%;
+  background: var(--bg3); border: 2px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; font-size: 2rem; color: var(--muted);
+}
+.resp-card__role {
+  font-family: var(--font-mono); font-size: 0.6rem;
+  text-transform: uppercase; letter-spacing: 0.18em; margin-bottom: 0.3rem;
+}
+.resp-card__name { font-family: var(--font-head); font-size: 1.2rem; font-weight: 700; margin-bottom: 0.2rem; }
+.resp-card__note { font-size: 0.78rem; color: var(--muted); }
+
+.articles { max-width: 1200px; margin: 0 auto; padding: 0 2.5rem 5rem; }
+.articles__grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem;
+}
+
+a.article-card { display: block; }
+.article-card {
+  background: var(--bg2); border: 1px solid var(--border);
+  padding: 1.8rem; transition: border-color 0.25s, transform 0.25s;
+  position: relative; height: 100%;
+}
+.article-card:hover { transform: translateY(-2px); }
+.article-card__date {
+  font-family: var(--font-mono); font-size: 0.62rem;
+  text-transform: uppercase; letter-spacing: 0.14em;
+  color: var(--muted); margin-bottom: 0.8rem;
+}
+.article-card__title {
+  font-family: var(--font-head); font-size: 1.1rem;
+  font-weight: 700; line-height: 1.3; margin-bottom: 0.8rem;
+}
+.article-card__body { font-size: 0.83rem; color: var(--muted); line-height: 1.75; }
+.article-card__read-more {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 0.68rem; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.12em; margin-top: 1rem; opacity: 0.55;
+  transition: opacity 0.2s, gap 0.2s;
+}
+.article-card__read-more::after { content: '→'; }
+a.article-card:hover .article-card__read-more { opacity: 1; gap: 10px; }
+
+/* ── SECTION THEMES ─────────────────────────────── */
+/* KOSMOS */
+#kosmos .page-banner {
+  background: linear-gradient(135deg, #00020a 0%, #040d1f 40%, #041a2e 100%);
+  border-bottom: 1px solid rgba(0,255,255,0.15);
+  position: relative; overflow: hidden;
+}
+#kosmos .page-banner::before {
+  content: ''; position: absolute; inset: 0;
+  background-image:
+    radial-gradient(1px 1px at 10% 20%, #fff 0%, transparent 100%),
+    radial-gradient(1px 1px at 30% 60%, rgba(255,255,255,0.6) 0%, transparent 100%),
+    radial-gradient(1px 1px at 50% 10%, rgba(255,255,255,0.8) 0%, transparent 100%),
+    radial-gradient(1px 1px at 70% 40%, #fff 0%, transparent 100%),
+    radial-gradient(1px 1px at 85% 70%, rgba(255,255,255,0.5) 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 60% 80%, rgba(0,255,255,0.7) 0%, transparent 100%),
+    radial-gradient(1px 1px at 15% 85%, rgba(255,255,255,0.4) 0%, transparent 100%),
+    radial-gradient(1px 1px at 92% 20%, rgba(255,255,255,0.7) 0%, transparent 100%),
+    radial-gradient(circle at 20% 50%, rgba(0,100,255,0.08) 0%, transparent 50%),
+    radial-gradient(circle at 80% 30%, rgba(0,255,255,0.06) 0%, transparent 45%);
+}
+#kosmos .page-eyebrow { color: var(--cyan); }
+#kosmos .page-eyebrow::before { background: var(--cyan); }
+#kosmos .article-card:hover { border-color: var(--cyan); }
+#kosmos .article-card__title { color: #a0e8ff; }
+#kosmos .resp-card__role { color: var(--cyan); }
+#kosmos .resp-card__inner { border-color: rgba(0,255,255,0.3); }
+#kosmos a.article-card .article-card__read-more { color: var(--cyan); }
+
+/* GDR */
+#gdr .page-banner {
+  background: linear-gradient(180deg, #111111 0%, #1c1c1c 100%);
+  border-bottom: 3px solid var(--red); position: relative;
+}
+#gdr .page-banner::after {
+  content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 0px;
+  background: repeating-linear-gradient(90deg, var(--red) 0, var(--red) 20px, transparent 20px, transparent 24px);
+}
+#gdr .page-eyebrow { color: var(--red); }
+#gdr .page-eyebrow::before { background: var(--red); }
+#gdr .article-card { border-color: rgba(255,60,60,0.15); }
+#gdr .article-card:hover { border-color: var(--red); }
+#gdr .article-card__title { color: #f0e8e8; }
+#gdr .resp-card__role { color: var(--red); }
+#gdr .resp-card__inner { border-color: rgba(255,60,60,0.3); }
+#gdr a.article-card .article-card__read-more { color: var(--red); }
+
+/* BALTIKA */
+#baltika .page-banner {
+  background: linear-gradient(135deg, #0b0e12 0%, #111820 50%, #0c1318 100%);
+  border-bottom: 1px solid rgba(255,209,102,0.2);
+  position: relative; overflow: hidden;
+}
+#baltika .page-banner::before {
+  content: ''; position: absolute; left: 0; bottom: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold) 30%, transparent 70%, var(--gold));
+  opacity: 0.4;
+}
+#baltika .page-eyebrow { color: var(--gold); }
+#baltika .page-eyebrow::before { background: var(--gold); }
+#baltika .article-card { border-color: rgba(255,209,102,0.12); }
+#baltika .article-card:hover { border-color: var(--gold); }
+#baltika .article-card__title { color: #f5ebd8; }
+#baltika .resp-card__role { color: var(--gold); }
+#baltika .resp-card__inner { border-color: rgba(255,209,102,0.25); }
+#baltika a.article-card .article-card__read-more { color: var(--gold); }
+
+/* KNR */
+#knr .page-banner {
+  background: linear-gradient(135deg, #100505 0%, #1a0808 60%, #120404 100%);
+  border-bottom: 2px solid rgba(220,30,30,0.5);
+  position: relative; overflow: hidden;
+}
+#knr .page-banner::before {
+  content: '★  ★★★★'; position: absolute; top: 1.5rem; right: 2.5rem;
+  font-size: 1.1rem; color: rgba(255,209,102,0.3); letter-spacing: 0.5rem;
+}
+#knr .page-eyebrow { color: #ff4444; }
+#knr .page-eyebrow::before { background: #ff4444; }
+#knr .article-card { border-color: rgba(220,30,30,0.2); }
+#knr .article-card:hover { border-color: #ff4444; }
+#knr .article-card__title { color: #ffe5e5; }
+#knr .resp-card__role { color: #ff4444; }
+#knr .resp-card__inner { border-color: rgba(220,30,30,0.35); }
+#knr a.article-card .article-card__read-more { color: #ff4444; }
+
+/* MOLODEZH */
+#molodezh .page-banner {
+  background: linear-gradient(135deg, #040d04 0%, #0a150a 60%, #060f06 100%);
+  border-bottom: 1px solid rgba(57,255,20,0.2);
+  position: relative; overflow: hidden;
+}
+#molodezh .page-banner::before {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 50% 100%, rgba(57,255,20,0.05) 0%, transparent 60%);
+}
+#molodezh .page-eyebrow { color: var(--green); }
+#molodezh .page-eyebrow::before { background: var(--green); }
+#molodezh .article-card { border-color: rgba(57,255,20,0.12); }
+#molodezh .article-card:hover { border-color: var(--green); }
+#molodezh .article-card__title { color: #d8f5d8; }
+#molodezh .resp-card__role { color: var(--green); }
+#molodezh .resp-card__inner { border-color: rgba(57,255,20,0.2); }
+#molodezh a.article-card .article-card__read-more { color: var(--green); }
+
+/* НЮРНБЕРГ (серебряная тема) */
+#nurnberg .page-banner {
+  background: linear-gradient(135deg, #14161a 0%, #1e2128 40%, #2a2e36 100%);
+  border-bottom: 1px solid rgba(176,176,176,0.3);
+  position: relative;
+}
+#nurnberg .page-banner::after {
+  content: '';
+  position: absolute; bottom: 1rem; left: 2rem;
+  font-size: 2rem; opacity: 0.2;
+  pointer-events: none;
+}
+#nurnberg .page-eyebrow { color: var(--silver); }
+#nurnberg .page-eyebrow::before { background: var(--silver); }
+#nurnberg .article-card:hover { border-color: var(--silver); }
+#nurnberg .article-card__title { color: #e0e0e0; }
+#nurnberg .resp-card__role { color: var(--silver); }
+#nurnberg .resp-card__inner { border-color: rgba(176,176,176,0.3); }
+#nurnberg a.article-card .article-card__read-more { color: var(--silver); }
+
+/* ── FOOTER ─────────────────────────────────────── */
+.site-footer {
+  border-top: 1px solid var(--border); padding: 2rem 2.5rem;
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 0.72rem; color: var(--muted); font-family: var(--font-mono);
+}
+.site-footer__logo { font-weight: 700; font-size: 0.85rem; }
+
+/* ── RESPONSIVE ─────────────────────────────────── */
+@media (max-width: 820px) {
+  .topbar { padding: 0.8rem 1rem; flex-direction: column; height: auto; gap: 0.5rem; }
+  .home-hero { grid-template-columns: 1fr; gap: 2rem; padding: 3rem 1.2rem 2rem; }
+  .home-hero__visual { height: 220px; }
+  .home-hero__glow { width: 190px; height: 190px; }
+  .sections-grid, .articles { padding: 0 1.2rem; }
+  .page-header { padding: 2rem 1.2rem 1rem; }
+  .resp-card { padding: 0 1.2rem; }
+  .site-footer { flex-direction: column; gap: 0.5rem; text-align: center; }
+}
+</style>
+</head>
+<body>
+
+<!-- ══ TOPBAR ══════════════════════════════════════════════ -->
+<header class="topbar">
+  <a href="#home" class="topbar__logo">
+    Построение сетевого<br><span>сообщества политологов</span>
+  </a>
+  <nav class="topbar__nav">
+    <a href="#home">Главная</a>
+    <a href="#kosmos">Космос</a>
+    <a href="#gdr">ГДР / Германия</a>
+    <a href="#baltika">Прибалтика</a>
+    <a href="#knr">КНР</a>
+    <a href="#molodezh">Молодёжная политика</a>
+    <a href="#nurnberg">Нюрнберг</a>   <!-- новая ссылка -->
+  </nav>
+</header>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     ГЛАВНАЯ
+══════════════════════════════════════════════════════════ -->
+<div id="home" class="page">
+
+  <section class="home-hero">
+    <div>
+      <p class="home-hero__eyebrow">Наука ГУУ</p>
+      <h1 class="home-hero__title">
+        Построение сетевого сообщества политологов
+      </h1>
+      <p class="home-hero__desc">
+        Аналитические материалы, исследования и эссе участников сообщества —
+        от советско-китайских отношений до молодёжной политики современной России.
+      </p>
+    </div>
+    <div class="home-hero__visual" aria-hidden="true">
+      <div class="home-hero__glow">
+        <div class="home-hero__inner-text">
+          Полит<br>3-1<br>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <div class="sections-grid">
+    <div class="section-card card--cyan">
+      <span class="section-card__num">01</span>
+      <p class="section-card__tag">Раздел</p>
+      <h2 class="section-card__title">Космос</h2>
+      <p class="section-card__desc">Политическое измерение космической гонки, международное сотрудничество и современные программы.</p>
+      <a href="#kosmos" class="section-card__link">Перейти</a>
+    </div>
+    <div class="section-card card--red">
+      <span class="section-card__num">02</span>
+      <p class="section-card__tag">Раздел</p>
+      <h2 class="section-card__title">ГДР / Германия</h2>
+      <p class="section-card__desc">ГДР, политика памяти и современные германо-российские отношения в контексте СВО.</p>
+      <a href="#gdr" class="section-card__link">Перейти</a>
+    </div>
+    <div class="section-card card--gold">
+      <span class="section-card__num">03</span>
+      <p class="section-card__tag">Раздел</p>
+      <h2 class="section-card__title">Прибалтика</h2>
+      <p class="section-card__desc">Эстония, Латвия, Литва — история региона, российско-прибалтийские отношения и их деградация.</p>
+      <a href="#baltika" class="section-card__link">Перейти</a>
+    </div>
+    <div class="section-card card--red">
+      <span class="section-card__num">04</span>
+      <p class="section-card__tag">Раздел</p>
+      <h2 class="section-card__title">КНР</h2>
+      <p class="section-card__desc">Советско-китайское и российско-китайское взаимодействие: энергетика, промышленность, политика.</p>
+      <a href="#knr" class="section-card__link">Перейти</a>
+    </div>
+    <div class="section-card card--green">
+      <span class="section-card__num">05</span>
+      <p class="section-card__tag">Раздел</p>
+      <h2 class="section-card__title">Молодёжная политика</h2>
+      <p class="section-card__desc">Работы молодых исследователей: история, геополитика, семейная политика и современные вызовы.</p>
+      <a href="#molodezh" class="section-card__link">Перейти</a>
+    </div>
+    <!-- карточка для Нюрнберга (исправлена ссылка и стиль) -->
+    <div class="section-card card--silver">
+      <span class="section-card__num">06</span>
+      <p class="section-card__tag">Раздел</p>
+      <h2 class="section-card__title">Нюрнбергский процесс</h2>
+      <p class="section-card__desc">Построение послевоенного мира, международное правосудие и политические уроки.</p>
+      <a href="#nurnberg" class="section-card__link">Перейти</a>
+    </div>
+  </div>
+
+  <div class="home-bottom">
+    Портал «Построение сетевого сообщества политологов» — площадка для публикации аналитических и исследовательских материалов участников проекта.
+  </div>
+
+  <footer class="site-footer">
+    <span class="site-footer__logo" style="color:var(--cyan)">СЕТЕВОЕ СООБЩЕСТВО ПОЛИТОЛОГОВ</span>
+    <span>© 2025</span>
+    <span>3 года работы...</span>
+  </footer>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     КОСМОС
+══════════════════════════════════════════════════════════ -->
+<div id="kosmos" class="page">
+  <div class="page-banner">
+    <div class="page-header" style="position:relative">
+      <p class="page-eyebrow">// Раздел 01</p>
+      <h1 class="page-title" style="color:#a0e8ff">Космос</h1>
+    </div>
+  </div>
+
+  <div class="resp-card">
+    <div class="resp-card__inner">
+      <img src="ODV.jpg"
+           alt="Ответственный за раздел Космос"
+           class="resp-card__photo"
+           onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+      <div class="resp-card__photo-placeholder" style="display:none">☆</div>
+      <div class="resp-card__info">
+        <p class="resp-card__role">Ответственный за раздел</p>
+        <p class="resp-card__name">Дмитрий Осипов</p>
+        <p class="resp-card__note">Редактор раздела</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="articles">
+    <div class="articles__grid">
+      <a href="https://t.me/PolitHub1/56" target="_blank" class="article-card">
+        <p class="article-card__date">2026</p>
+        <h2 class="article-card__title">Тенденции и изменения космических программ США, Китая и России. Милитаризация космоса</h2>
+        <p class="article-card__body">Кто и зачем заполняет орбиту военными спутниками? Автор разбирает 24 года запусков трёх сверхдержав и выясняет, кто первым начал новую космическую гонку — и как страны обходят старые договоры</p>
+        <span class="article-card__read-more">Читать</span>
+      </a>
+      <a href="https://t.me/PolitHub1/59" target="_blank" class="article-card">
+        <p class="article-card__date">2026</p>
+        <h2 class="article-card__title">Анализ Artemis Accords</h2>
+        <p class="article-card__body">Новые правила игры на Луне: кому на самом деле выгодны «Соглашения Артемиды»? В статье показано, как один документ объединяет выгоды государства, частных корпораций и даже личные амбиции американских президентов.</p>
+        <span class="article-card__read-more">Читать</span>
+      </a>
+      <a href="https://t.me/PolitHub1/57" target="_blank" class="article-card">
+        <p class="article-card__date">2026</p>
+        <h2 class="article-card__title">Индекс эффективности космической деятельности стран</h2>
+        <p class="article-card__body">Как сравнить науку в космосе, когда у всех разный бюджет и разная степень секретности? Статья предлагает честную балльную систему, которая показывает, кто получает максимум открытий на каждый потраченный миллиард.</p>
+        <span class="article-card__read-more">Читать</span>
+      </a>
+      <a href="https://t.me/PolitHub1/61" target="_blank" class="article-card">
+        <p class="article-card__date">2026</p>
+        <h2 class="article-card__title">Анализ трудоустроенности выпускников политологов</h2>
+        <p class="article-card__body">Две трети выпускников-политологов работает не по специальности, а государство их почти не замечает. Почему при спросе на гуманитариев молодые специалисты остаются за бортом науки и профессии?</p>
+        <span class="article-card__read-more">Читать</span>
+      </a>
+      <a href="https://t.me/PolitHub1/58" target="_blank" class="article-card">
+        <p class="article-card__date">2026</p>
+        <h2 class="article-card__title">Современная космическая гонка</h2>
+        <p class="article-card__body">США запускают тысячи спутников, Китай строит орбитальные станции, а Россия… пока догоняет. Статья — честный взгляд на то, кто сегодня задаёт тон в космосе и что на самом деле осталось от великой космической державы.</p>
+        <span class="article-card__read-more">Читать</span>
+      </a>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <a href="#home" class="site-footer__logo" style="color:var(--cyan)">← Главная</a>
+    <span>Космос</span>
+    <span>© 2025</span>
+  </footer>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     ГДР / ГЕРМАНИЯ
+══════════════════════════════════════════════════════════ -->
+<div id="gdr" class="page">
+  <div class="page-banner">
+    <div class="page-header">
+      <p class="page-eyebrow">// Раздел 02</p>
+      <h1 class="page-title" style="color:#f0e0e0">ГДР / Германия</h1>
+    </div>
+  </div>
+
+  <div class="resp-card">
+    <div class="resp-card__inner">
+      <img src="kal.jpg"
+           alt="Ответственный за раздел ГДР"
+           class="resp-card__photo"
+           onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+      <div class="resp-card__photo-placeholder" style="display:none">★</div>
+      <div class="resp-card__info">
+        <p class="resp-card__role">Ответственный за раздел</p>
+        <p class="resp-card__name">Иван Калюжный</p>
+        <p class="resp-card__note">Редактор раздела</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="articles">
+    <div class="articles__grid">
+      <a href="https://t.me/PolitHub1/14" target="_blank" class="article-card">
+        <p class="article-card__date">2025</p>
+        <h2 class="article-card__title">Эссе по И.В. Сталину — портрет личности</h2>
+        <p class="article-card__body">Политический портрет И.В. Сталина: характер, методы управления и историческое наследие.</p>
+        <span class="article-card__read-more">Читать</span>
+      </a>
+      <a href="https://t.me/PolitHub1/19" target="_blank" class="article-card">
+        <p class="article-card__date">2025</p>
+        <h2 class="article-card__title">Политическая ориентация молодёжи в современной России</h2>
+        <p class="article-card__body">Исследование современной обстановки среди молодёжи в политике.</p>
+        <span class="article-card__read-more">Читать</span>
+      </a>
+      <a href="https://t.me/PolitHub1/20" target="_blank" class="article-card">
+        <p class="article-card__date">2025</p>
+        <h2 class="article-card__title">Германская военная помощь Украине в ходе Специальной военной операции</h2>
+        <p class="article-card__body">Экономика и цифры: анализ объёмов и характера германских военных поставок.</p>
+        <span class="article-card__read-more">Читать</span>
+      </a>
+      <a href="https://t.me/PolitHub1/26" target="_blank" class="article-card">
+        <p class="article-card__date">2025</p>
+        <h2 class="article-card__title">Внешняя политика США в домашнем и латиноамериканском регионах</h2>
+        <p class="article-card__body">Исследование современной геополитической стратегии США на американском континенте.</p>
+        <span class="article-card__read-more">Читать</span>
+      </a>
+      <a href="https://t.me/PolitHub1/33" target="_blank" class="article-card">
+        <p class="article-card__date">2025</p>
+        <h2 class="article-card__title">Американский империализм: зарождение, апогей, кризис</h2>
+        <p class="article-card__body">Исследование истории становления Американской Империи от колониального периода до современности.</p>
+        <span class="article-card__read-more">Читать</span>
+      </a>
+      <a href="https://t.me/PolitHub1/34" target="_blank" class="article-card">
+        <p class="article-card__date">2025</p>
+        <h2 class="article-card__title">История российско-американских отношений</h2>
+        <p class="article-card__body">Разбор истории отношений двух стран от первых контактов до современного противостояния.</p>
+        <span class="article-card__read-more">Читать</span>
+      </a>
+      <a href="https://t.me/PolitHub1/48" target="_blank" class="article-card">
+        <p class="article-card__date">2025</p>
+        <h2 class="article-card__title">Мобилизационная готовность экономики</h2>
+        <p class="article-card__body">Исследование механизмов и показателей мобилизационной готовности национальной экономики.</p>
+        <span class="article-card__read-more">Читать</span>
+      </a>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <a href="#home" class="site-footer__logo" style="color:var(--red)">← Главная</a>
+    <span>ГДР / Германия</span>
+    <span>© 2025</span>
+  </footer>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     ПРИБАЛТИКА
+══════════════════════════════════════════════════════════ -->
+<div id="baltika" class="page">
+  <div class="page-banner">
+    <div class="page-header">
+      <p class="page-eyebrow">// Раздел 03</p>
+      <h1 class="page-title" style="color:#f5e8c8">Прибалтика</h1>
+    </div>
+  </div>
+
+  <div class="resp-card">
+    <div class="resp-card__inner">
+      <img src="abr.jpg"
+           alt="Ответственный за раздел Прибалтика"
+           class="resp-card__photo"
+           onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+      <div class="resp-card__photo-placeholder" style="display:none">◈</div>
+      <div class="resp-card__info">
+        <p class="resp-card__role">Ответственный за раздел</p>
+        <p class="resp-card__name">Дмитрий Абрамов</p>
+        <p class="resp-card__note">Редактор раздела</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="articles">
+    <div class="articles__grid">
+      <a href="https://t.me/PolitHub1/24" target="_blank" class="article-card">
+        <p class="article-card__date">2024</p>
+        <h2 class="article-card__title">Политический портрет Павла Николаевича Милюкова</h2>
+        <p class="article-card__body">Эссе о политическом деятеле и историке П.Н. Милюкове — его взглядах, роли в истории России и либеральном наследии.</p>
+        <span class="article-card__read-more">Читать</span>
+      </a>
+      <a href="https://t.me/PolitHub1/22" target="_blank" class="article-card">
+        <p class="article-card__date">2024</p>
+        <h2 class="article-card__title">Политические отношения России с Финляндией</h2>
+        <p class="article-card__body">Анализ политического взаимодействия России и Финляндии — от исторических предпосылок до современного состояния.</p>
+        <span class="article-card__read-more">Читать</span>
+      </a>
+      <a href="https://t.me/PolitHub1/27" target="_blank" class="article-card">
+        <p class="article-card__date">2024</p>
+        <h2 class="article-card__title">Отношения России со странами Прибалтики: деградация</h2>
+        <p class="article-card__body">Исследование процесса деградации отношений между Россией и прибалтийскими государствами после 1991 года.</p>
+        <span class="article-card__read-more">Читать</span>
+      </a>
+      <a href="https://t.me/PolitHub1/26" target="_blank" class="article-card">
+        <p class="article-card__date">2024</p>
+        <h2 class="article-card__title">Внешняя политика США в домашнем и латиноамериканском регионах</h2>
+        <p class="article-card__body">Исследование геополитической стратегии США на американском континенте и её глобального измерения.</p>
+        <span class="article-card__read-more">Читать</span>
+      </a>
+      <a href="https://t.me/PolitHub1/36" target="_blank" class="article-card">
+        <p class="article-card__date">2025</p>
+        <h2 class="article-card__title">В.В. Жириновский: этногеополитические проблемы России</h2>
+        <p class="article-card__body">Анализ взглядов В.В. Жириновского на этническую и геополитическую проблематику России.</p>
+        <span class="article-card__read-more">Читать</span>
+      </a>
+      <a href="https://t.me/PolitHub1/52" target="_blank" class="article-card">
+        <p class="article-card__date">2025</p>
+        <h2 class="article-card__title">Посмертное влияние Владимира Вольфовича Жириновского на современную политику России</h2>
+        <p class="article-card__body">Исследование политического наследия и продолжающегося влияния идей Жириновского на российскую политическую жизнь.</p>
+        <span class="article-card__read-more">Читать</span>
+      </a>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <a href="#home" class="site-footer__logo" style="color:var(--gold)">← Главная</a>
+    <span>Прибалтика</span>
+    <span>© 2025</span>
+  </footer>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     КНР
+══════════════════════════════════════════════════════════ -->
+<div id="knr" class="page">
+  <div class="page-banner">
+    <div class="page-header">
+      <p class="page-eyebrow">// Раздел 04</p>
+      <h1 class="page-title" style="color:#ffe0e0">КНР</h1>
+    </div>
+  </div>
+
+  <div class="resp-card">
+    <div class="resp-card__inner">
+      <img src="bel.jpg"
+           alt="Ответственный за раздел КНР"
+           class="resp-card__photo"
+           onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+      <div class="resp-card__photo-placeholder" style="display:none">★</div>
+      <div class="resp-card__info">
+        <p class="resp-card__role">Ответственный за раздел</p>
+        <p class="resp-card__name">Иван Белозеров</p>
+        <p class="resp-card__note">Редактор раздела</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="articles">
+    <div class="articles__grid">
+      <a href="ССЫЛКА_НА_СТАТЬЮ_КНР_1" target="_blank" class="article-card">
+        <p class="article-card__date">2025</p>
+        <h2 class="article-card__title">Чеченская республика как обособленный субъект Российской Федерации</h2>
+        <p class="article-card__body">Анализ особого политического и правового статуса Чечни в системе российского федерализма.</p>
+<!-- <span class="article-card__read-more">Читать</span>-->
+      </a>
+      <a href="https://t.me/PolitHub1/17" target="_blank" class="article-card">
+        <p class="article-card__date">2025</p>
+        <h2 class="article-card__title">Энергетическое взаимодействие КНР и СССР в 1949–1960-е годы</h2>
+        <p class="article-card__body">Исследование первого этапа советско-китайского энергетического сотрудничества в период дружбы двух держав.</p>
+        <span class="article-card__read-more">Читать</span>
+      </a>
+      <a href="https://t.me/PolitHub1/18" target="_blank" class="article-card">
+        <p class="article-card__date">2025</p>
+        <h2 class="article-card__title">Экономические взаимодействия КНР и СССР с политической точки зрения в 1980-е годы</h2>
+        <p class="article-card__body">Политэкономический анализ советско-китайских отношений в период нормализации после «великого раскола».</p>
+        <span class="article-card__read-more">Читать</span>
+      </a>
+      <a href="https://t.me/PolitHub1/40" target="_blank" class="article-card">
+        <p class="article-card__date">2025</p>
+        <h2 class="article-card__title">СССР и КНР в 1980–1991 гг.: энергетика и промышленность на фоне распада системы</h2>
+        <p class="article-card__body">Анализ советско-китайского сотрудничества в энергетике и промышленности в контексте позднесоветского кризиса.</p>
+        <span class="article-card__read-more">Читать</span>
+      </a>
+      <a href="https://t.me/PolitHub1/44" target="_blank" class="article-card">
+        <p class="article-card__date">2025</p>
+        <h2 class="article-card__title">Политическое взаимодействие России и Китая в 1991–2000 гг.</h2>
+        <p class="article-card__body">Становление российско-китайского стратегического партнёрства в первое постсоветское десятилетие.</p>
+        <span class="article-card__read-more">Читать</span>
+      </a>
+      <a href="https://t.me/PolitHub1/54" target="_blank" class="article-card">
+        <p class="article-card__date">2025</p>
+        <h2 class="article-card__title">Россия и КНР в 2000–2010-е гг.: стратегическое партнёрство в энергетике и промышленной кооперации</h2>
+        <p class="article-card__body">Исследование зрелого этапа российско-китайского взаимодействия — от деклараций к реальным энергетическим проектам.</p>
+        <span class="article-card__read-more">Читать</span>
+      </a>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <a href="#home" class="site-footer__logo" style="color:#ff4444">← Главная</a>
+    <span>КНР</span>
+    <span>© 2025</span>
+  </footer>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     МОЛОДЁЖНАЯ ПОЛИТИКА
+══════════════════════════════════════════════════════════ -->
+<div id="molodezh" class="page">
+  <div class="page-banner">
+    <div class="page-header">
+      <p class="page-eyebrow">// Раздел 05</p>
+      <h1 class="page-title" style="color:#c8ffc8">Молодёжная политика</h1>
+    </div>
+  </div>
+
+  <div class="resp-card">
+    <div class="resp-card__inner">
+      <img src="zar.jpg"
+           alt="Ответственный за раздел Молодёжная политика"
+           class="resp-card__photo"
+           onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+      <div class="resp-card__photo-placeholder" style="display:none">◉</div>
+      <div class="resp-card__info">
+        <p class="resp-card__role">Ответственный за раздел</p>
+        <p class="resp-card__name">Павел Зарубин</p>
+        <p class="resp-card__note">Редактор раздела</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="articles">
+    <div class="articles__grid">
+      <a href="https://t.me/PolitHub1/21" target="_blank" class="article-card">
+        <p class="article-card__date">2024</p>
+        <h2 class="article-card__title">Проблема коллективной безопасности в Европе 1930-х</h2>
+        <p class="article-card__body">Анализ попыток выстроить систему коллективной безопасности в межвоенной Европе и причин её провала.</p>
+        <span class="article-card__read-more">Читать</span>
+      </a>
+      <a href="ССЫЛКА_НА_СТАТЬЮ_МОЛОДЁЖЬ_2" target="_blank" class="article-card">
+        <p class="article-card__date">2024</p>
+        <h2 class="article-card__title">Значение религиозного выбора Александра Невского относительно последующих поколений</h2>
+        <p class="article-card__body">Исследование политического и цивилизационного значения религиозного выбора, сделанного Александром Невским.</p>
+        <!-- <span class="article-card__read-more">Читать</span>-->
+      </a>
+      <a href="https://t.me/PolitHub1/42" target="_blank" class="article-card">
+        <p class="article-card__date">2024</p>
+        <h2 class="article-card__title">Ситуативность власти А.Ф. Керенского</h2>
+        <p class="article-card__body">Анализ природы и ограничений политической власти А.Ф. Керенского в условиях революционного 1917 года.</p>
+        <span class="article-card__read-more">Читать</span>
+      </a>
+      <a href="https://t.me/PolitHub1/37" target="_blank" class="article-card">
+        <p class="article-card__date">2024</p>
+        <h2 class="article-card__title">Насколько эффективна современная семейная политика в РФ</h2>
+        <p class="article-card__body">Оценка действующих инструментов и результатов государственной семейной политики в современной России.</p>
+        <span class="article-card__read-more">Читать</span>
+      </a>
+      <a href="ССЫЛКА_НА_СТАТЬЮ_МОЛОДЁЖЬ_5" target="_blank" class="article-card">
+        <p class="article-card__date">2025</p>
+        <h2 class="article-card__title">Де-долларизация в странах БРИКС: между амбициями и реальностью</h2>
+        <p class="article-card__body">Критический анализ усилий стран БРИКС по снижению зависимости от доллара и реальных успехов этого процесса.</p>
+        <!-- <span class="article-card__read-more">Читать</span>-->
+      </a>
+      <a href="ССЫЛКА_НА_СТАТЬЮ_МОЛОДЁЖЬ_6" target="_blank" class="article-card">
+        <p class="article-card__date">2025</p>
+        <h2 class="article-card__title">Инструменты привлечения молодых управленческих кадров в спортивную индустрию на уровне государства</h2>
+        <p class="article-card__body">Исследование государственных механизмов формирования молодёжного кадрового резерва в сфере спортивного управления.</p>
+        <!-- <span class="article-card__read-more">Читать</span>-->
+      </a>
+      <a href="ССЫЛКА_НА_СТАТЬЮ_МОЛОДЁЖЬ_7" target="_blank" class="article-card">
+        <p class="article-card__date">2026</p>
+        <h2 class="article-card__title">Жилищная обеспеченность многодетных семей</h2>
+        <p class="article-card__body">Анализ государственных программ жилищного обеспечения многодетных семей и их практической результативности.</p>
+        <!-- <span class="article-card__read-more">Читать</span>-->
+      </a>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <a href="#home" class="site-footer__logo" style="color:var(--green)">← Главная</a>
+    <span>Молодёжная политика</span>
+    <span>© 2025</span>
+  </footer>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     НЮРНБЕРГСКИЙ ПРОЦЕСС
+══════════════════════════════════════════════════════════ -->
+<div id="nurnberg" class="page">
+  <div class="page-banner">
+    <div class="page-header">
+      <p class="page-eyebrow">// Раздел 06</p>
+      <h1 class="page-title" style="color:#e0e0e0">Нюрнбергский процесс</h1>
+      <p class="page-subtitle"></p>
+    </div>
+  </div>
+
+  <div class="resp-card">
+    <div class="resp-card__inner">
+      <!-- ЗДЕСЬ ВСТАВЬТЕ ССЫЛКУ НА ФОТО ОТВЕТСТВЕННОГО (замените photo_nurnberg.jpg) -->
+      <img src="fom.jpg"
+           alt="Ответственный за раздел Нюрнбергский процесс"
+           class="resp-card__photo"
+           onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+      <div class="resp-card__photo-placeholder" style="display:none"></div>
+      <div class="resp-card__info">
+        <p class="resp-card__role">Ответственный за раздел</p>
+        <p class="resp-card__name">Дмитрий Фомкин</p>
+        <p class="resp-card__note">Редактор раздела</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="articles">
+    <div class="articles__grid">
+      <!-- СТАТЬИ РАЗДЕЛА "НЮРНБЕРГСКИЙ ПРОЦЕСС" - ДОБАВЛЯЙТЕ/РЕДАКТИРУЙТЕ ЗДЕСЬ -->
+      <a href="ССЫЛКА_НА_СТАТЬЮ_НЮРНБЕРГ_1" target="_blank" class="article-card">
+        <p class="article-card__date">2025</p>
+        <h2 class="article-card__title">Каталонское движение за независимость</h2>
+        <p class="article-card__body"></p>
+       <!-- <span class="article-card__read-more">Читать</span>-->
+      </a>
+
+      <a href="https://t.me/PolitHub1/62" target="_blank" class="article-card">
+        <p class="article-card__date">2025</p>
+        <h2 class="article-card__title">Политическое противостояние на нюрбергском процессе стран победительниц</h2>
+        <p class="article-card__body">Нюрнбергский процесс стал не только судом над лидерами фашистской Германии, но и ареной политического противостояния между спецслужбами стран-победительниц — СССР, США, Великобритании и Франции, которое происходило на фоне обострения отношений между будущим капиталистическим и коммунистическим блоками.</p>
+        <span class="article-card__read-more">Читать</span>
+      </a>
+
+      <a href="https://t.me/PolitHub1/63" target="_blank" class="article-card">
+        <p class="article-card__date">2024</p>
+        <h2 class="article-card__title">Влияние политиечских процессов и интересов государтсв во время холодной войны на шахматы</h2>
+        <p class="article-card__body">В период Холодной войны шахматы стали важным полем противостояния между СССР и США, где победы шахматистов использовались для демонстрации интеллектуального превосходства идеологий: советская система с государственной поддержкой шахматной школы доминировала, выпустив большинство чемпионов мира.</p>
+        <span class="article-card__read-more">Читать</span>
+      </a>
+
+      <a href="ССЫЛКА_НА_СТАТЬЮ_НЮРНБЕРГ_4" target="_blank" class="article-card">
+        <p class="article-card__date">2026</p>
+        <h2 class="article-card__title">Расширение НАТО и безопасность западных границ РФ</h2>
+        <p class="article-card__body"></p>
+       <!-- <span class="article-card__read-more">Читать</span>-->
+      </a>
+
+      <!-- ДОБАВЬТЕ НОВЫЕ СТАТЬИ ПО АНАЛОГИИ (копируйте блок <a> и меняйте содержимое) -->
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <a href="#home" class="site-footer__logo" style="color:var(--silver)">← Главная</a>
+    <span>Нюрнбергский процесс</span>
+    <span>© 2025</span>
+  </footer>
+</div>
+
+</body>
+</html>
